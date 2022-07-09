@@ -18,7 +18,7 @@ And for a lexeme with the sequence `8` `6` `.` `7` `4` , the lexer should turn t
 I'm aware that the lexer is very simple since it's meant to make tokens out of a specific set of characters and nothing more. But I wanted to make my parser's job easier by having my lexer distinguish the type of the lexemes better. The more defined the tokens are, the easier it'll be for the parser to organize the parse tree and clarify some things when the tree undergoes semantic analysis. I still have a long way to go.
 
 
-
+Also, I got carried away with my lexer being able to handle single line and multi line comments. That functionality is not needed.
 
 
 
