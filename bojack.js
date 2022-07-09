@@ -1,5 +1,3 @@
-//BOJACK HORSEMAN
-//DISSECTION TIME
 
 var input = ` true false`;
 
