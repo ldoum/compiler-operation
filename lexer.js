@@ -4,7 +4,8 @@ function Lexer(expr) {
 
 	var digits = /[0-9]/;
 	var identifier_chars = /[A-Za-z_]/;
-	var symbol_bits = /[-&|!+*\/=<>%:]/;
+	//Regular expression for the operator lexeme handler updated.
+	var symbol_bits = /[-&|!+*\/=<>%:\]\[\(\)\{\}\.,;?]/;
 	var space = /[ ]/;
 
 	for (let where = 0; where < expr.length; where++) {
