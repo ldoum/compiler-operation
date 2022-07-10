@@ -5,8 +5,6 @@ function Lexer(expr) {
 	var tokens = [];
 
 	var digits = /[0-9]/;
-	//CHANGE REGEXP FOR IDENTIFIER CHARACTERS
-	//5th priority
 	var identifier_chars = /[A-Za-z_]/;
 	var symbol_bits = /[-&|!+*\/=<>%:]/;
 	var space = /[ ]/;
@@ -32,7 +30,7 @@ function Lexer(expr) {
 				}
 				el = expr[++where];
 
-				//LEAVE THIS CONDITION ALONE
+				
 				if (el.match(/[\.]/)) {
 					
 					number += el;
@@ -43,7 +41,6 @@ function Lexer(expr) {
 				}
 			}
 			
-			//Updated my regexps for integer and double type tokens
 			if(number.match(/^[0-9]+$/)){
                 		tokens.push({ type: 'integer', value: number });
             		} else if (number.match(/^[0-9]+\.[0-9]+$/)) {
@@ -54,8 +51,7 @@ function Lexer(expr) {
 			
 		}
 		
-		//FIX THE ID HANDLER
-		//2nd priority fix.
+		//ID HANDLER FIXED
 		else if (el.match(identifier_chars)) {
 			var identifier = '';
 
@@ -67,104 +63,34 @@ function Lexer(expr) {
 				el = expr[++where];
 			}
 
-			/*put reserved array as a separate module
-			//Arrays in separate modules take 6th priority
-			let reserved = [
-				'for',
-				'while',
-				'const',
-				'class',
-				'if',
-				'else',
-				'elif',
-				'def',
-				'and',
-				'var',
-				'or',
-				'not',
-				'return',
-				'break',
-				'continue',
-				'this',
-				'try',
-				'catch',
-				'finally',
-				'throw',
-				'null',
-				'string',
-				'bool',
-				'double',
-				'float',
-				'int',
-				'char',
-				'public',
-				'protected',
-				'private',
-				'new',
-				'switch',
-				'case',
-				'function',
-				'let',
-				'enum',
-				'do',
-				'in',
-				'of'
-			];*/
-
-			for (let iter = 0; iter < reserved.length; iter++) {
-				if (identifier == reserved[iter]) {
-					tokens.push({ type: 'reserved_keyword', value: identifier });
-				}
-			}
-			if (identifier.match(/^true$|^false$/)) {
-				tokens.push({ type: 'boolean', value: identifier });
+			//////////NEW CODE HERE//////////////////
+			if (identifier.match(/^(this|class|return|null|function|pass)$/)) {
+				return { type: 'reserved', value: identifier };
+			} else if (identifier.match(/^(and|or|not)$/)) {
+				return { type: 'logical', value: identifier };
+			} else if (identifier.match(/^(break|continue)$/)) {
+				return { type: 'jumper', value: identifier };
+			} else if (identifier.match(/^(for|while|do|in|of)$/)) {
+				return { type: 'looper', value: identifier };
+			} else if (identifier.match(/^(switch|case|if|else|default|elif)$/)) {
+				return { type: 'conditonal', value: identifier };
+			} else if (identifier.match(/^(true|false)$/)) {
+				return { type: 'boolean', value: identifier };
+			} else if (identifier.match(/^(var|string|bool|double|float|int|let|const|void)$/)) {
+				return { type: 'declarator', value: identifier };
 			} else {
-				tokens.push({ type: 'identifier', value: identifier });
+				return { type: 'regular', value: identifier };
 			}
 		}
 		
-		/* FIX THE SYMBOL HANDLER
-		//3rd priority fix
+		//SYMBOL HANDLER FIXED
 		else if (el.match(symbol_bits)) {
 			var op = '';
 			
-			/*put operation array as a separate module
-			let operation = [
-				':',
-				'::',
-				'||',
-				'&&',
-				'!',
-				'=',
-				'+',
-				'-',
-				'*',
-				'/',
-				'%',
-				'<',
-				'>',
-				'?',
-				'==',
-				'!=',
-				'<=',
-				'>=',
-				'++',
-				'--',
-				'+=',
-				'-=',
-				'*=',
-				'/=',
-				'%=',
-				'!==',
-				'===',
-				'&',
-				'**',
-				'=>',
-				'->'
-			];*/
+			
 			while (el.match(symbol_bits)) {
 				op += el;
-				/*
+				/* KEEP THIS COMMENTED
 				// single comment handler
 				if (op == '//') {
 					while (true) {
@@ -202,77 +128,49 @@ function Lexer(expr) {
 				el = expr[++where];
 			}
 
-			for (let index = 0; index < operation.length; index++) {
-				if (op == operation[index]) {
-					tokens.push({
-						type: 'operator',
-						value: op
-					});
-				}
+			//////////NEW CODE HERE//////////////////
+			if (op.match(/[|]{2}|[&]{2}|!/)) {
+				return { type: 'logical', value: op };
+			} else if (op.match(/[-]{1,2}|[+]{1,2}|[*]{1,2}|[\/%]/)) {
+				return { type: 'math', value: op };
+			} else if (op.match(/[\[\]\(\)\{\}]|\.{3}|\.|[,;&:]/)) {
+				return { type: 'punctuation', value: op };
+			} else if (op.match(/[<>?]|^[<>!=]=$|[!=]==/)) {
+				return { type: 'comparisons', value: op };
+			} else if (op.match(/^[-+*\/%*]=$|^\*\*=$/)) {
+				return { type: 'assignments', value: op };
+			} else {
+				console.log(`Invalid operator lexeme: ${op}`);
 			}
-			*/
-		} else {
-			console.log(`Invalid character: ${el}`);
-		}
-		switch (el) {
-			case `(`:
-				tokens.push({ type: 'left_paren', value: el });
-				break;
-			case `)`:
-				tokens.push({ type: 'right_paren', value: el });
-				break;
-			case `[`:
-				tokens.push({ type: 'left_bracket', value: el });
-				break;
-			case `]`:
-				tokens.push({ type: 'right_bracket', value: el });
-				break;
-			case ';':
-				tokens.push({ type: 'semi_colon', value: el });
-				break;
-			case `$`:
-				tokens.push({ type: 'dollar_sign', value: el });
-				break;
-			case ',':
-				tokens.push({ type: 'comma', value: el });
-				break;
-			case '.':
-				tokens.push({ type: 'dot', value: el });
-				break;
-			//TEST THE STRING HANDLER AS WELL////////////
-			//Testing this algorithm takes 4th priority.
-			case `"`:
-				let stringValue = '';
+		} 
+		
+		else if (el.match(/['"]/)){
+		/*WORK ON THE STRING HANDLER
+			let stringValue = '';
+	
+			el = expr[++where];
 
+			while (el.match(/[^"]/)) {
+				stringValue += el;
+
+				if (where == expr.length - 1) {
+					break;
+				}
 				el = expr[++where];
 
-				while (el.match(/[^"]/)) {
+				if (el.match(/[']/)) {
 					stringValue += el;
-
-					if (where == expr.length - 1) {
-						break;
-					}
-					el = expr[++where];
-
-					if (el.match(/[']/)) {
-						stringValue += el;
-						if (where < expr.length - 1) {
-							el = expr[++where];
-						}
+					if (where < expr.length - 1) {
+						el = expr[++where];
 					}
 				}
+			}
 
-				tokens.push({ type: 'string', value: stringValue });
-				break;
-			////////////////////////////////////	
-			case `{`:
-				tokens.push({ type: 'left_brace', value: el });
-				break;
-			case `}`:
-				tokens.push({ type: 'right_brace', value: el });
-				break;
-			
+			tokens.push({ type: 'string', value: stringValue });*/
+		else {
+			console.log(`Invalid character: ${el}`);
 		}
+	
 	}
 
 	//This line is optional
