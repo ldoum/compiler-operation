@@ -1,6 +1,4 @@
-
-var input = ` true false`;
-
+//The lexical analyzer is a module now.
 function Lexer(expr) {
 	var tokens = [];
 
@@ -12,12 +10,10 @@ function Lexer(expr) {
 	for (let where = 0; where < expr.length; where++) {
 		var el = expr[where];
 
-		//Fixing the if condition 
 		if (el.match(space)) {
 			console.log(`Ignoring whitespace on index ${where}`);
 		}
 		
-		/*NUMBER LITERAL HANDLER IS FIXED. */
 		else if (el.match(digits)) {
 			var number = '';
 
@@ -50,7 +46,6 @@ function Lexer(expr) {
 			
 		}
 		
-		//ID HANDLER FIXED
 		else if (el.match(identifier_chars)) {
 			var identifier = '';
 
@@ -62,34 +57,34 @@ function Lexer(expr) {
 				el = expr[++where];
 			}
 
-			//////////NEW CODE HERE//////////////////
-			if (identifier.match(/^(this|class|return|null|function|pass)$/)) {
-				return { type: 'reserved', value: identifier };
+			//UPDATED THIS
+			if (identifier.match(/^(this|class|tokens.push()|null|function|pass)$/)) {
+				tokens.push({ type: 'reserved', value: identifier })
 			} else if (identifier.match(/^(and|or|not)$/)) {
-				return { type: 'logical', value: identifier };
+				tokens.push({ type: 'logical', value: identifier })
 			} else if (identifier.match(/^(break|continue)$/)) {
-				return { type: 'jumper', value: identifier };
+				tokens.push({ type: 'jumper', value: identifier })
 			} else if (identifier.match(/^(for|while|do|in|of)$/)) {
-				return { type: 'looper', value: identifier };
+				tokens.push({ type: 'looper', value: identifier })
 			} else if (identifier.match(/^(switch|case|if|else|default|elif)$/)) {
-				return { type: 'conditonal', value: identifier };
+				tokens.push({ type: 'conditonal', value: identifier })
 			} else if (identifier.match(/^(true|false)$/)) {
-				return { type: 'boolean', value: identifier };
+				tokens.push({ type: 'boolean', value: identifier })
 			} else if (identifier.match(/^(var|string|bool|double|float|int|let|const|void)$/)) {
-				return { type: 'declarator', value: identifier };
+				tokens.push({ type: 'declarator', value: identifier })
 			} else {
-				return { type: 'regular', value: identifier };
+				tokens.push({ type: 'regular', value: identifier })
 			}
 		}
 		
-		//SYMBOL HANDLER FIXED
+		
 		else if (el.match(symbol_bits)) {
 			var op = '';
 			
 			
 			while (el.match(symbol_bits)) {
 				op += el;
-				/* KEEP THIS COMMENTED
+				/* KEEP THIS COMMENTED STILL
 				// single comment handler
 				if (op == '//') {
 					while (true) {
@@ -127,17 +122,17 @@ function Lexer(expr) {
 				el = expr[++where];
 			}
 
-			//////////NEW CODE HERE//////////////////
+			//////////UPDATED THIS TOO//////////////////
 			if (op.match(/[|]{2}|[&]{2}|!/)) {
-				return { type: 'logical', value: op };
+				tokens.push( { type: 'logical', value: op })
 			} else if (op.match(/[-]{1,2}|[+]{1,2}|[*]{1,2}|[\/%]/)) {
-				return { type: 'math', value: op };
+				tokens.push( { type: 'math', value: op })
 			} else if (op.match(/[\[\]\(\)\{\}]|\.{3}|\.|[,;&:]/)) {
-				return { type: 'punctuation', value: op };
+				tokens.push( { type: 'punctuation', value: op })
 			} else if (op.match(/[<>?]|^[<>!=]=$|[!=]==/)) {
-				return { type: 'comparisons', value: op };
+				tokens.push( { type: 'comparisons', value: op })
 			} else if (op.match(/^[-+*\/%*]=$|^\*\*=$/)) {
-				return { type: 'assignments', value: op };
+				tokens.push( { type: 'assignments', value: op })
 			} else {
 				console.log(`Invalid operator lexeme: ${op}`);
 			}
@@ -177,4 +172,5 @@ function Lexer(expr) {
 	return tokens;
 }
 
-console.log(Lexer(input))
+module.exports = {Lexer}
+
