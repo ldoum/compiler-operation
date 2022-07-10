@@ -12,9 +12,8 @@ function Lexer(expr) {
 	for (let where = 0; where < expr.length; where++) {
 		var el = expr[where];
 
-		//UPDATED WHITESPACE HANDLER. 
-		//Statement is completely optional.
-		if (space.test(el)) {
+		//Fixing the if condition 
+		if (el.match(space)) {
 			console.log(`Ignoring whitespace on index ${where}`);
 		}
 		
@@ -173,7 +172,6 @@ function Lexer(expr) {
 	
 	}
 
-	//This line is optional
 	console.log(`White spaces ignored: ${expr.match(/[ ]/g) ? expr.match(/[ ]/g).length : 0}`);
 	//return array of tokens
 	return tokens;
