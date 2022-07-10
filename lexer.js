@@ -5,19 +5,34 @@ function Lexer(expr) {
 	var tokens = [];
 
 	var digits = /[0-9]/;
+	//CHANGE REGEXP FOR IDENTIFIER CHARACTERS
+	//5th priority
 	var identifier_chars = /[A-Za-z_]/;
 	var symbol_bits = /[-&|!+*\/=<>%:]/;
-	var space = /\s/;
-	var spaces = 0
+	var space = /[ ]/;
 
 	for (let where = 0; where < expr.length; where++) {
 		var el = expr[where];
 
-		//whitespace handler [fixing now]
+		//UPDATED WHITESPACE HANDLER. 
+		//Statement is completely optional.
 		if (space.test(el)) {
-			spaces++
+			console.log(`Ignoring whitespace on index ${where}`);
 		}
-		//digit handler
+		
+		/*UPDATED DIGIT HANDLER. 
+		
+		This lexical algorithm is capable of generating integer type tokens that can carry values of either a whole number
+		or a number with a decimal point
+		
+		However, the algorithm has a flaw. Multiple decimal points can be made in the digit lexeme which is what I don't want.
+			Examples:
+				1234  Good
+				56.79  Good
+				4.66.53   Bad
+				
+		Fixing this algorithm takes first priority.
+		*/
 		else if (el.match(digits)) {
 			var number = '';
 
@@ -29,14 +44,20 @@ function Lexer(expr) {
 				}
 				el = expr[++where];
 
-				if (el.match(/[.]/)) {
+				//fix this condition and test
+				if (el.match(/[\.]/)) {
+					
 					number += el;
-					if (where < expr.length - 1) {
-						el = expr[++where];
+					if (where == expr.length - 1) {
+						break;
 					}
+					el = expr[++where];
 				}
 			}
+			//Leave this line for now
+			tokens.push({ type: 'integer', value: number });
 
+			/*
 			if (number.match(/[\.]{1}/)) {
 				tokens.push({ type: 'double', value: number })
 			}
@@ -44,9 +65,11 @@ function Lexer(expr) {
 				tokens.push({ type: 'integer', value: number });
 			} else {
 				console.log(`Invalid digit sequence: ${number}`)
-			}
+			}*/
 		}
-		//id handler
+		
+		//FIX THE ID HANDLER
+		//2nd priority fix.
 		else if (el.match(identifier_chars)) {
 			var identifier = '';
 
@@ -58,6 +81,8 @@ function Lexer(expr) {
 				el = expr[++where];
 			}
 
+			/*put reserved array as a separate module
+			//Arrays in separate modules take 6th priority
 			let reserved = [
 				'for',
 				'while',
@@ -98,7 +123,7 @@ function Lexer(expr) {
 				'do',
 				'in',
 				'of'
-			];
+			];*/
 
 			for (let iter = 0; iter < reserved.length; iter++) {
 				if (identifier == reserved[iter]) {
@@ -111,9 +136,13 @@ function Lexer(expr) {
 				tokens.push({ type: 'identifier', value: identifier });
 			}
 		}
-		//symbol handler
+		
+		/* FIX THE SYMBOL HANDLER
+		//3rd priority fix
 		else if (el.match(symbol_bits)) {
 			var op = '';
+			
+			/*put operation array as a separate module
 			let operation = [
 				':',
 				'::',
@@ -146,7 +175,7 @@ function Lexer(expr) {
 				'**',
 				'=>',
 				'->'
-			];
+			];*/
 			while (el.match(symbol_bits)) {
 				op += el;
 				/*
@@ -195,6 +224,7 @@ function Lexer(expr) {
 					});
 				}
 			}
+			*/
 		} else {
 			console.log(`Invalid character: ${el}`);
 		}
@@ -223,6 +253,8 @@ function Lexer(expr) {
 			case '.':
 				tokens.push({ type: 'dot', value: el });
 				break;
+			//TEST THE STRING HANDLER AS WELL////////////
+			//Testing this algorithm takes 4th priority.
 			case `"`:
 				let stringValue = '';
 
@@ -246,6 +278,7 @@ function Lexer(expr) {
 
 				tokens.push({ type: 'string', value: stringValue });
 				break;
+			////////////////////////////////////	
 			case `{`:
 				tokens.push({ type: 'left_brace', value: el });
 				break;
@@ -256,7 +289,9 @@ function Lexer(expr) {
 		}
 	}
 
-	console.log(`White spaces ignored: ${spaces}`);
+	//This line is optional
+	console.log(`White spaces ignored: ${expr.match(/[ ]/g) ? expr.match(/[ ]/g).length : 0}`);
+	//return array of tokens
 	return tokens;
 }
 
