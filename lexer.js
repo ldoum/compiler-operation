@@ -20,19 +20,7 @@ function Lexer(expr) {
 			console.log(`Ignoring whitespace on index ${where}`);
 		}
 		
-		/*UPDATED DIGIT HANDLER. 
-		
-		This lexical algorithm is capable of generating integer type tokens that can carry values of either a whole number
-		or a number with a decimal point
-		
-		However, the algorithm has a flaw. Multiple decimal points can be made in the digit lexeme which is what I don't want.
-			Examples:
-				1234  Good
-				56.79  Good
-				4.66.53   Bad
-				
-		Fixing this algorithm takes first priority.
-		*/
+		/*NUMBER LITERAL HANDLER IS FIXED. */
 		else if (el.match(digits)) {
 			var number = '';
 
@@ -44,7 +32,7 @@ function Lexer(expr) {
 				}
 				el = expr[++where];
 
-				//fix this condition and test
+				//LEAVE THIS CONDITION ALONE
 				if (el.match(/[\.]/)) {
 					
 					number += el;
@@ -54,18 +42,16 @@ function Lexer(expr) {
 					el = expr[++where];
 				}
 			}
-			//Leave this line for now
-			tokens.push({ type: 'integer', value: number });
-
-			/*
-			if (number.match(/[\.]{1}/)) {
-				tokens.push({ type: 'double', value: number })
-			}
-			else if (number.match(/^[0-9]$/)){
-				tokens.push({ type: 'integer', value: number });
+			
+			//Updated my regexps for integer and double type tokens
+			if(number.match(/^[0-9]+$/)){
+                		tokens.push({ type: 'integer', value: number });
+            		} else if (number.match(/^[0-9]+\.[0-9]+$/)) {
+				tokens.push({ type: 'double', value: number });
 			} else {
 				console.log(`Invalid digit sequence: ${number}`)
-			}*/
+			}
+			
 		}
 		
 		//FIX THE ID HANDLER
