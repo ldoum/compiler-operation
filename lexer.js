@@ -4,7 +4,6 @@ function Lexer(expr) {
 
 	var digits = /[0-9]/;
 	var identifier_chars = /[A-Za-z_]/;
-	//Regular expression for the operator lexeme handler updated.
 	var symbol_bits = /[-&|!+*\/=<>%:\]\[\(\)\{\}\.,;?]/;
 	var space = /[ ]/;
 
@@ -37,12 +36,21 @@ function Lexer(expr) {
 				}
 			}
 			
-			if(number.match(/^[0-9]+$/)){
+			//UPDATING THIS BLOCK TO ACCOMODATE THE SCIENTIFIC NOTATION FEATURE
+			//and also, the digit literal lexemes can now store negative whole numbers,
+			//negative decimal places, and last but deffo not least, negative coefficients with negative
+			//exponents. The exponent range is from +99 to -99.
+			//The digits are positive by default. Put a negative sign before a digit to make the literal
+			//negative. Putting a positive sign before a digit is totally optional.
+			if(number.match(/^([-+]\d+|[0-9]+)$/)){
                 		tokens.push({ type: 'integer', value: number });
-            		} else if (number.match(/^[0-9]+\.[0-9]+$/)) {
+            		} else if (number.match(/^([-+]\d+\.[0-9]*|[0-9]+\.\d*)$/)) {
 				tokens.push({ type: 'double', value: number });
+			//ADDED THIS LINE
+			} else if (number.match(/^(([-+]\d{1,2}|\d{1,2})\.[0-9]+[Ee]([-+]\d{1,2}|\d{1,2}))$/)) {
+				tokens.push({ type: 'scientific', value: number });	
 			} else {
-				console.log(`Invalid digit sequence: ${number}`)
+				console.log(`Invalid digit lexeme: ${number}`)
 			}
 			
 		}
@@ -85,20 +93,21 @@ function Lexer(expr) {
 			
 			while (el.match(symbol_bits)) {
 				op += el;
-				/* KEEP THIS COMMENTED STILL
-				// single comment handler
-				if (op == '//') {
-					while (true) {
+				
+				//SINGLE COMMENT IGNORER IS NOW FULLY OPERATIONAL
+				if (op.match(/^([\/]{2})$/) || el.match(/^#$/)) {
+					el = expr[++where];
+					while (el.match(/[^\n]/)) {
 						if (where == expr.length - 1) {
 							break;
 						}
-
-						if (expr[++where].match(/[~]/)) {
-							break;
-						}
+						el = expr[++where];
 					}
 				}
-				// multi comment handler
+				/////////////////////////////
+				
+				
+				/* multi comment handler is next.
 				if (op == '/*') {
 					while (true) {
 						if (where == expr.length - 1) {
@@ -117,16 +126,18 @@ function Lexer(expr) {
 				}
 				*/
 
-				if (where == expr.length - 1) {
+				//UPDATED BREAK LOOP CONDITION
+				if (where == expr.length - 1 || el.match(/\n/)) {
 					break;
 				}
 				el = expr[++where];
 			}
 
-			////////////MADE BETTER SEARCH PATTERNS 
+			////////////MADE SLIGHTLY BETTER SEARCH PATTERNS 
 			if (op.match(/^([|]{2}|[&]{2}|!)$/)) {
 				tokens.push({ type: 'logical', value: op });
-			} else if (op.match(/^([-]{1,2}|[+]{1,2}|[*]{1,2})$|[\/%]/)) {
+				//fixed this regexp
+			} else if (op.match(/^([-]{1,2}|[+]{1,2}|[*]{1,2}|[\/%])$/)) {
 				tokens.push({ type: 'math', value: op });
 			} else if (op.match(/^([\[\]\(\)\{\}]|\.{3}|\.|[,;&:])$/)) {
 				tokens.push({ type: 'punctuation', value: op });
@@ -134,17 +145,24 @@ function Lexer(expr) {
 				tokens.push({ type: 'comparisons', value: op });
 			} else if (op.match(/^([-+*\/%*]=|\*{2}=)$/)) {
 				tokens.push({ type: 'assignments', value: op });
+			//ADDED THIS LINE
+			} else if (op.match(/^([\/]{2})$/)) {
+				console.log(`Single line comment found. Ignore`);
+			//ADDED THIS LINE AS WELL
+			} else if (op.match(/^(\/[*]|[*]\/)$/)) {
+				console.log(`Multi line comment found. Ignore`);		
 			} else {
 				console.log(`Invalid operator lexeme: ${op}`);
 			}
 		} 
 		
 		else if (el.match(/['"]/)){
-		/*WORK ON THE STRING HANDLER
+		/*Please work on the string handler
 			let stringValue = '';
 	
 			el = expr[++where];
 
+			/////Specifically this loop//////
 			while (el.match(/[^"]/)) {
 				stringValue += el;
 
@@ -162,7 +180,9 @@ function Lexer(expr) {
 			}
 
 			tokens.push({ type: 'string', value: stringValue });*/
-		else {
+			
+			
+		} else {
 			console.log(`Invalid character: ${el}`);
 		}
 	
