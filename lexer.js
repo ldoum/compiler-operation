@@ -58,8 +58,8 @@ function Lexer(expr) {
 				el = expr[++where];
 			}
 
-			//UPDATED THIS
-			if (identifier.match(/^(this|class|tokens.push()|null|function|pass)$/)) {
+			
+			if (identifier.match(/^(this|class|return|null|function|pass)$/)) {
 				tokens.push({ type: 'reserved', value: identifier })
 			} else if (identifier.match(/^(and|or|not)$/)) {
 				tokens.push({ type: 'logical', value: identifier })
@@ -123,17 +123,17 @@ function Lexer(expr) {
 				el = expr[++where];
 			}
 
-			//////////UPDATED THIS TOO//////////////////
-			if (op.match(/[|]{2}|[&]{2}|!/)) {
-				tokens.push( { type: 'logical', value: op })
-			} else if (op.match(/[-]{1,2}|[+]{1,2}|[*]{1,2}|[\/%]/)) {
-				tokens.push( { type: 'math', value: op })
-			} else if (op.match(/[\[\]\(\)\{\}]|\.{3}|\.|[,;&:]/)) {
-				tokens.push( { type: 'punctuation', value: op })
-			} else if (op.match(/[<>?]|^[<>!=]=$|[!=]==/)) {
-				tokens.push( { type: 'comparisons', value: op })
-			} else if (op.match(/^[-+*\/%*]=$|^\*\*=$/)) {
-				tokens.push( { type: 'assignments', value: op })
+			////////////MADE BETTER SEARCH PATTERNS 
+			if (op.match(/^([|]{2}|[&]{2}|!)$/)) {
+				tokens.push({ type: 'logical', value: op });
+			} else if (op.match(/^([-]{1,2}|[+]{1,2}|[*]{1,2})$|[\/%]/)) {
+				tokens.push({ type: 'math', value: op });
+			} else if (op.match(/^([\[\]\(\)\{\}]|\.{3}|\.|[,;&:])$/)) {
+				tokens.push({ type: 'punctuation', value: op });
+			} else if (op.match(/^([<>?]|[<>!=]=|[!=]==)$/)) {
+				tokens.push({ type: 'comparisons', value: op });
+			} else if (op.match(/^([-+*\/%*]=|\*{2}=)$/)) {
+				tokens.push({ type: 'assignments', value: op });
 			} else {
 				console.log(`Invalid operator lexeme: ${op}`);
 			}
