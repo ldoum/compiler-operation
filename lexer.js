@@ -1,19 +1,25 @@
-//The lexical analyzer is a module now.
+//Detailed markdown explanation of the file overhaul located below this module
 function Lexer(expr) {
 	var tokens = [];
 
 	var digits = /[0-9]/;
 	var identifier_chars = /[A-Za-z_]/;
-	var symbol_bits = /[-&|!+*\/=<>%:\]\[\(\)\{\}\.,;?]/;
+	//UPDATED VARIABLE WITH NEW NAME. 'symbol_bits' to 'opkeys'
+	var opkeys = /[-&|!\+\*\/=<>%?]/;
+	//NEW VARIABLE
+	var symbols = /[.,;:\[\]\{\}\(\)]/;
+	//NEW VARIABLE. COMMENT KEYS
+	var ignoreme = /[`#]/;
 	var space = /[ ]/;
 
 	for (let where = 0; where < expr.length; where++) {
 		var el = expr[where];
 
+		//white space handler
 		if (el.match(space)) {
 			console.log(`Ignoring whitespace on index ${where}`);
 		}
-		
+		//digit handler
 		else if (el.match(digits)) {
 			var number = '';
 
@@ -36,17 +42,10 @@ function Lexer(expr) {
 				}
 			}
 			
-			//UPDATING THIS BLOCK TO ACCOMODATE THE SCIENTIFIC NOTATION FEATURE
-			//and also, the digit literal lexemes can now store negative whole numbers,
-			//negative decimal places, and last but deffo not least, negative coefficients with negative
-			//exponents. The exponent range is from +99 to -99.
-			//The digits are positive by default. Put a negative sign before a digit to make the literal
-			//negative. Putting a positive sign before a digit is totally optional.
 			if(number.match(/^([-+]\d+|[0-9]+)$/)){
                 		tokens.push({ type: 'integer', value: number });
             		} else if (number.match(/^([-+]\d+\.[0-9]*|[0-9]+\.\d*)$/)) {
 				tokens.push({ type: 'double', value: number });
-			//ADDED THIS LINE
 			} else if (number.match(/^(([-+]\d{1,2}|\d{1,2})\.[0-9]+[Ee]([-+]\d{1,2}|\d{1,2}))$/)) {
 				tokens.push({ type: 'scientific', value: number });	
 			} else {
@@ -54,7 +53,7 @@ function Lexer(expr) {
 			}
 			
 		}
-		
+		//identifier handler
 		else if (el.match(identifier_chars)) {
 			var identifier = '';
 
@@ -66,124 +65,195 @@ function Lexer(expr) {
 				el = expr[++where];
 			}
 
-			
+			//CHANGED TOKEN TYPE VALUES
+
+			//words				 old name            new name
+			//and, or, not      		'logical'      to     'logic'
+			//non-reserved			'identifier'   to     'name'
+			//var, let, bool:   		'declarator'   to     'declare'
+			//continue:					      'skip'
+			//break:               		'jumper'       to     'jump'
+			//for, while, do:      		'looper'       to     'loop'
+			//switch,else,if:  		'conditional'    to   'decision'
 			if (identifier.match(/^(this|class|return|null|function|pass)$/)) {
-				tokens.push({ type: 'reserved', value: identifier })
+				tokens.push({ type: 'reserved', value: identifier });
 			} else if (identifier.match(/^(and|or|not)$/)) {
-				tokens.push({ type: 'logical', value: identifier })
-			} else if (identifier.match(/^(break|continue)$/)) {
-				tokens.push({ type: 'jumper', value: identifier })
+				tokens.push({ type: 'logic', value: identifier });
+			//PUT KEYWORD CONTINUE ON A SEPARATE STATEMENT. TOKEN TYPE IS SKIP
+			} else if (identifier.match(/^(continue)$/)) {
+				tokens.push({ type: 'skip', value: identifier });
+			} else if (identifier.match(/^(break)$/)) {
+				tokens.push({ type: 'jump', value: identifier });
 			} else if (identifier.match(/^(for|while|do|in|of)$/)) {
-				tokens.push({ type: 'looper', value: identifier })
+				tokens.push({ type: 'loop', value: identifier });
 			} else if (identifier.match(/^(switch|case|if|else|default|elif)$/)) {
-				tokens.push({ type: 'conditonal', value: identifier })
+				tokens.push({ type: 'decision', value: identifier });
 			} else if (identifier.match(/^(true|false)$/)) {
-				tokens.push({ type: 'boolean', value: identifier })
+				tokens.push({ type: 'boolean', value: identifier });
 			} else if (identifier.match(/^(var|string|bool|double|float|int|let|const|void)$/)) {
-				tokens.push({ type: 'declarator', value: identifier })
+				tokens.push({ type: 'declare', value: identifier });
 			} else {
-				tokens.push({ type: 'regular', value: identifier })
+				tokens.push({ type: 'name', value: identifier });
 			}
-		}
-		
-		
-		else if (el.match(symbol_bits)) {
+		//UPDATED THIS CONDITION. ACCEPTS OP KEYS OR IGNORE KEYS
+		} else if (el.match(opkeys) || el.match(ignoreme)) {
 			var op = '';
 			
 			
-			while (el.match(symbol_bits)) {
+			while (el.match(opkeys) || el.match(ignoreme)) {
 				op += el;
 				
-				//SINGLE COMMENT IGNORER IS NOW FULLY OPERATIONAL
+				//SINGLE LINE COMMENT IGNORER UPDATED
 				if (op.match(/^([\/]{2})$/) || el.match(/^#$/)) {
+					
+					console.log(`[${op}] Single line comment found. Ignore`);
 					el = expr[++where];
+					
 					while (el.match(/[^\n]/)) {
+						
 						if (where == expr.length - 1) {
+							break;
+						}
+			
+						//ADDED THIS STATEMENT.
+						if (el.match(/\n/)) {
 							break;
 						}
 						el = expr[++where];
 					}
 				}
-				/////////////////////////////
 				
 				
-				/* multi comment handler is next.
-				if (op == '/*') {
-					while (true) {
+				// MULTI LINE COMMENT IGNORER. SEMI OPERATIONAL. NEEDS FIXING
+				/*
+				if (op.match(/^(\/\*|`{3})$/)) {
+					el = expr[++where];
+
+					console.log(`[${op}] Multi line comment found. Ignore`);
+
+					let brake = '';
+					if (el.match(/[`\*\/]/)) {
+						brake += el;
+					}
+
+					while (!(brake.match(/^(`{3}|\*\/)$/))) {
 						if (where == expr.length - 1) {
 							break;
 						}
-
-						if (expr[++where].match(/[*]|\//)) {
-							op += el;
-							console.log(op);
-						}
-						if (op.match(/^[*]\/$/)) {
-							op = '';
-							break;
-						}
+						el = expr[++where];
 					}
-				}
-				*/
+				}*/
+				///////////////////////////////////////////////
 
-				//UPDATED BREAK LOOP CONDITION
-				if (where == expr.length - 1 || el.match(/\n/)) {
-					break;
-				}
-				el = expr[++where];
-			}
-
-			////////////MADE SLIGHTLY BETTER SEARCH PATTERNS 
-			if (op.match(/^([|]{2}|[&]{2}|!)$/)) {
-				tokens.push({ type: 'logical', value: op });
-				//fixed this regexp
-			} else if (op.match(/^([-]{1,2}|[+]{1,2}|[*]{1,2}|[\/%])$/)) {
-				tokens.push({ type: 'math', value: op });
-			} else if (op.match(/^([\[\]\(\)\{\}]|\.{3}|\.|[,;&:])$/)) {
-				tokens.push({ type: 'punctuation', value: op });
-			} else if (op.match(/^([<>?]|[<>!=]=|[!=]==)$/)) {
-				tokens.push({ type: 'comparisons', value: op });
-			} else if (op.match(/^([-+*\/%*]=|\*{2}=)$/)) {
-				tokens.push({ type: 'assignments', value: op });
-			//ADDED THIS LINE
-			} else if (op.match(/^([\/]{2})$/)) {
-				console.log(`Single line comment found. Ignore`);
-			//ADDED THIS LINE AS WELL
-			} else if (op.match(/^(\/[*]|[*]\/)$/)) {
-				console.log(`Multi line comment found. Ignore`);		
-			} else {
-				console.log(`Invalid operator lexeme: ${op}`);
-			}
-		} 
-		
-		else if (el.match(/['"]/)){
-		/*Please work on the string handler
-			let stringValue = '';
-	
-			el = expr[++where];
-
-			/////Specifically this loop//////
-			while (el.match(/[^"]/)) {
-				stringValue += el;
-
+				//REMOVED 2ND CONDITION  el.match(/\n/)
 				if (where == expr.length - 1) {
 					break;
 				}
 				el = expr[++where];
-
-				if (el.match(/[']/)) {
-					stringValue += el;
-					if (where < expr.length - 1) {
-						el = expr[++where];
-					}
-				}
 			}
 
-			tokens.push({ type: 'string', value: stringValue });*/
+			//UPDATED THIS CONDITIONAL BLOCK
+			if (op.match(/^([|]{2}|[&]{2}|!)$/)) {
+				tokens.push({ type: 'logic', value: op });
+			} else if (op.match(/^([-]{1,2}|[+]{1,2}|[*]{1,2}|[\/%])$/)) {
+				tokens.push({ type: 'math', value: op });
+				
+			/*REMOVED THIS ELSE IF STATEMENT. WILL BE USED TO FORM SYMBOL HANDLER
+			} else if (op.match(/^([\[\]\(\)\{\}]|\.{3}|\.|[,;&:])$/)) {
+				tokens.push({ type: 'punctuation', value: op });*/
+				
+			} else if (op.match(/^([<>?]|[<>!=]=|[!=]==)$/)) {
+				tokens.push({ type: 'compare', value: op });
+				
+			//UPDATED THIS REGEX CONDITION. = OP NOW ACCEPTED
+			} else if (op.match(/^([-+*\/%*]=|\*{2}=|=)$/)) {
+				tokens.push({ type: 'assign', value: op });
+			} else {
+				console.log(`Invalid operator lexeme: ${op}`);
+			}
+			
+		//ADDED THIS BLOCK
+		} else if (el.match(symbols)) {
+
+			if (el.match(/^[\(\)]$/)) {
+				tokens.push({ type: 'specific', value: el });
+			} else if (el.match(/^[\{\}:]$/)) {
+				tokens.push({ type: 'group', value: el });
+			} else if (el.match(/^[\[\]]$/)) {
+				tokens.push({ type: 'order', value: el });
+			} else if (el.match(/^;$/)) {
+				tokens.push({ type: 'endline', value: el });
+			} else if (el.match(/^,$/)) {
+				tokens.push({ type: 'next', value: el });
+			} else if (el.match(/^\.$/)) {
+				tokens.push({ type: 'access', value: el });
+			}
+		
+		////////////////////////////////////////////////////////////////////////////	
+		//////////////MERGE THESE QUOTE HANDLERS ///////////////////////////////////
+			
+		//DOUBLE QUOTE HANDLER IS NOW OPERATIONAL
+		} else if (el.match(/^["]$/)) {
+			let stringDouble = '';
+
+			//Add opening quote
+			stringDouble += el;
+			el = expr[++where];
+
+			while (el.match(/[^"]/)) {
+				//break loop if EOF is reached
+				if (where == expr.length - 1) {
+					break;
+				}
+				//otherwise, add any character then skip 
+				stringDouble += el;
+				el = expr[++where];
+				
+			}
+			//Finally, add closing quote
+			stringDouble += el;
+
+			//Check if opening and closing strings match
+			if (stringDouble[stringDouble.length - 1].match(/"/)) {
+				tokens.push({ type: 'double quote string', value: stringDouble });
+			} else {
+				console.log(`Double quote string ${stringDouble} improperly set. `);
+			}
+			
+		//SINGLE QUOTE HANDLER IS NOW OPERATIONAL
+		} else if (el.match(/^[']$/)) {
+			let stringSingle = '';
+
+			//Add opening quote then skip  
+			stringSingle += el; 
+			el = expr[++where];
+
+			while (el.match(/[^']/)) {
+				//break loop if EOF is reached
+				if (where == expr.length - 1) {
+					break;
+				}
+				//otherwise, add any character then skip 
+				stringSingle += el;
+				el = expr[++where];
+
+			}
+			//Finally, add closing quote
+			stringSingle += el;
+
+			//Check if opening and closing strings match
+			if (stringSingle[stringSingle.length - 1].match(/'/)) {
+				tokens.push({ type: 'single quote string', value: stringSingle });
+			} else {
+				console.log(`Single quote string ${stringSingle} improperly set. `);
+			}
+	
+		//////////////MERGE THESE QUOTE HANDLERS ///////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////	
 			
 			
 		} else {
-			console.log(`Invalid character: ${el}`);
+			console.log(`Unknown character at index #${where}: ${el}`);
 		}
 	
 	}
@@ -194,4 +264,32 @@ function Lexer(expr) {
 }
 
 module.exports = {Lexer}
+
+/*
+VERY DETAILED EXPLANATION OF UPDATES TO THIS COMMIT: In markdown
+*Already included in Lexer Tune Up page of the project wiki but putting this here*
+
+*   Added conditional block that makes tokens from individual symbol characters
+    *  `.`  `,`  `;`  `:`  `[`  `]`  `{`  `}`  `(`  `)`
+*   Rewrote block that makes tokens from a sequence of operator characters
+    *   `-` `&` `|` `+` `*` `/` `=` `<` `>` `%` `?` `!`
+    * Also includes alternative characters for comments
+        *  `#` `<backtick * 3>` 
+    *   Updated the single line comment ignorer code
+    *   Included the multi line comment ignorer. Still needs fixing
+*   Changed token type names representing different categories of reserved keywords in id token generator block 
+    * Reasons:
+        1. to make the lexical info a bit more meaningful for Syntax and/or Semantic Analyses
+        2. because the names were better than the generic, bland ones like `reserved_keyword` or `identifier` or `operator`
+*   Updated the regex condition that makes assign type tokens so the `=` sign can be accepted
+    * New regex:  `/^([-+*\/%*]=|\*{2}=|=)$/`
+*   Added two blocks that each make string literal tokens. 
+    *   The bodies of the single quote and double quote handlers are nearly the same, so I'll merge them
+        *   Quote is added first, then other characters, and finally the closing quote
+            *   The string literal is inspected to see if the quotes match.
+    *   These handlers can be updated.
+
+
+
+*/
 
