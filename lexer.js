@@ -1,6 +1,8 @@
 function Lexer(expr) {
 	
+	//store all token object from characters here
 	var tokens = [];
+    //regex validator variables
 	var digits = /[0-9]/;
 	var identifier_chars = /[A-Za-z_]/;
 	var opkeys = /[-&|!\+\*\/=<>%?]/;
@@ -22,11 +24,12 @@ function Lexer(expr) {
 			//number literal variable
 			var number = '';
 
+            //as long as there are digit characters in the expression, keep storing them
 			while (el.match(digits)) {
 				//add digit character
 				number += el;
 
-				//If End Of String (EOS) reached, stop
+				//If End Of String (EOS) reached, stop storing
 				if (readhead == expr.length - 1) {
 					//notify when lexer finishes reading this string
 					console.log(`Finished reading the string`);
@@ -40,7 +43,7 @@ function Lexer(expr) {
 					
 					//add that character leading the number literal
 					number += el;
-					//If End Of String (EOS) reached, stop
+					//If End Of String (EOS) reached, stop the loop
 					if (readhead == expr.length - 1) {
 						//notify when lexer finishes reading this string
 						console.log(`Finished reading the string`);
@@ -51,17 +54,19 @@ function Lexer(expr) {
 				}
 			}
 			
-			//DIGIT TOKEN VALIDATOR AND GENERATOR
+			//digit token validator and generator
+            //Accepts whole numbers: 45, 786, 12
 			if(number.match(/^(\d+)$/)){
                 tokens.push({ type: 'integer', value: number });
+            //Accepts decimal numbers: 7.45, 8.786, 12.0
             } else if (number.match(/^(\d+\.\d*)$/)) {
 				tokens.push({ type: 'double', value: number });
-			//Updated regex on this line's condition
+			//Accepts scientific notation numbers: 9.0E5, 8.78e-3, 12.9e+4, 12e8
 			} else if (number.match(/^(\d{1,2}\.[0-9]*[Ee]([-+]\d{1,2}|\d{1,2}))$/)) {
 				tokens.push({ type: 'scientific', value: number });	
+            //lexer stops reading the rest of the string if it runs into an invalid sequence
 			} else {
 				console.log(`Invalid digit lexeme: ${number}`);
-				//included this line so lexer can stop reading the rest of the string. The lexemes before this invalid one will still be tokenized
 				break; 
 			}
 			
@@ -71,6 +76,7 @@ function Lexer(expr) {
 			//identifier literal variable
 			var identifier = '';
 
+            //keep storing as long as there are letters in the expression
 			while (el.match(identifier_chars)) {
 				
 				//Add alphabet character
@@ -85,7 +91,7 @@ function Lexer(expr) {
 				el = expr[++readhead];
 			}
 
-			//IDENTIFIER TOKEN VALIDATOR AND GENERATOR
+			//identifier token validator and generator
 			if (identifier.match(/^(this|class|return|null|function|pass)$/)) {
 				tokens.push({ type: 'reserved', value: identifier });
 			} else if (identifier.match(/^(and|or|not)$/)) {
@@ -105,18 +111,18 @@ function Lexer(expr) {
 			} else {
 				tokens.push({ type: 'name', value: identifier });
 			}
-			
-		//MAJOR UPDATE TO THE OPERATOR HANDLER 
+			 
 		} else if (el.match(opkeys)) {
 			
 			//operator literal variable
 			var op = '';
 
+            //as long as there are operator keys in the input, keep collecting
 			while (el.match(opkeys)) {
 				//Add operator character
 				op += el;
 
-				//If EOS reached, stop
+				//If EOS reached, stop collecting
 				if (readhead == expr.length - 1) {
 					console.log(`Finished reading the string`);
 					break;
@@ -126,7 +132,7 @@ function Lexer(expr) {
 				el = expr[++readhead];
 			}
 
-			//SINGLE LINE COMMENT IGNORER
+			//single line comment ignorer
 			if (op.match(/^([\/]{2})$/)) {
 				console.log(`[${op}] Single line comment. Start ignoring`);
 
@@ -150,7 +156,7 @@ function Lexer(expr) {
 					el = expr[++readhead];
 				}
 			
-			//MULTI LINE COMMENT IGNORER
+			//multi line comment ignorer
 			} else if (op.match(/^(\/\*)$/)) {
 				console.log(`[${op}] Multi line comment. Start ignoring`);
 
@@ -168,7 +174,7 @@ function Lexer(expr) {
 						break;
 					}
 
-					//accepts * or /. update later
+					//accepts either the * or / keys
 					if(el.match(/[\/\*]/)){
 						stop += el
 					}
@@ -196,8 +202,9 @@ function Lexer(expr) {
 				break
 			}
 			
+        //symbol handler
 		} else if (el.match(symbols)) {
-			//SYMBOL TOKEN VALIDATOR AND GENERATOR
+			//symbol token validator and generator
 			if (el.match(/^[\(\)]$/)) {
 				tokens.push({ type: 'specific', value: el });
 			} else if (el.match(/^[\{\}:]$/)) {
@@ -212,7 +219,7 @@ function Lexer(expr) {
 				tokens.push({ type: 'access', value: el });
 			}
 	
-		//QUOTE HANDLERS HAVE BEEN MERGED
+		//string literal handler
 		} else if (el.match(/^["']$/)) {
 			
 			//string literal variable
