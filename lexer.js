@@ -1,85 +1,95 @@
-//Detailed markdown explanation of the file overhaul located below this module
 function Lexer(expr) {
+	
 	var tokens = [];
-
 	var digits = /[0-9]/;
 	var identifier_chars = /[A-Za-z_]/;
-	//UPDATED VARIABLE WITH NEW NAME. 'symbol_bits' to 'opkeys'
 	var opkeys = /[-&|!\+\*\/=<>%?]/;
-	//NEW VARIABLE
 	var symbols = /[.,;:\[\]\{\}\(\)]/;
-	//NEW VARIABLE. COMMENT KEYS
-	var ignoreme = /[`#]/;
 	var space = /[ ]/;
 
-	for (let where = 0; where < expr.length; where++) {
-		var el = expr[where];
+	//expression substring reader head
+	for (let readhead = 0; readhead < expr.length; readhead++) {
+		//start from the first element
+		var el = expr[readhead];
 
-		//white space handler
+		//white space ignorer
 		if (el.match(space)) {
-			console.log(`Ignoring whitespace on index ${where}`);
-		}
+			console.log(`Ignoring whitespace on index ${readhead}`);
+			
 		//digit handler
-		else if (el.match(digits)) {
+		} else if (el.match(digits)) {
+			
+			//number literal variable
 			var number = '';
 
 			while (el.match(digits)) {
+				//add digit character
 				number += el;
 
-				if (where == expr.length - 1) {
+				//If End Of String (EOS) reached, stop
+				if (readhead == expr.length - 1) {
+					//notify when lexer finishes reading this string
+					console.log(`Finished reading the string`);
 					break;
 				}
-				el = expr[++where];
+				//go to next element
+				el = expr[++readhead];
 
-				
-				if (el.match(/[\.]/)) {
+				//updated this block for scientific notation
+				if (el.match(/[-+\.Ee]/)) {
 					
+					//add that character leading the number literal
 					number += el;
-					if (where == expr.length - 1) {
+					//If End Of String (EOS) reached, stop
+					if (readhead == expr.length - 1) {
+						//notify when lexer finishes reading this string
+						console.log(`Finished reading the string`);
 						break;
 					}
-					el = expr[++where];
+					//go to next element
+					el = expr[++readhead];
 				}
 			}
 			
-			if(number.match(/^([-+]\d+|[0-9]+)$/)){
-                		tokens.push({ type: 'integer', value: number });
-            		} else if (number.match(/^([-+]\d+\.[0-9]*|[0-9]+\.\d*)$/)) {
+			//DIGIT TOKEN VALIDATOR AND GENERATOR
+			if(number.match(/^(\d+)$/)){
+                tokens.push({ type: 'integer', value: number });
+            } else if (number.match(/^(\d+\.\d*)$/)) {
 				tokens.push({ type: 'double', value: number });
-			} else if (number.match(/^(([-+]\d{1,2}|\d{1,2})\.[0-9]+[Ee]([-+]\d{1,2}|\d{1,2}))$/)) {
+			//Updated regex on this line's condition
+			} else if (number.match(/^(\d{1,2}\.[0-9]*[Ee]([-+]\d{1,2}|\d{1,2}))$/)) {
 				tokens.push({ type: 'scientific', value: number });	
 			} else {
-				console.log(`Invalid digit lexeme: ${number}`)
+				console.log(`Invalid digit lexeme: ${number}`);
+				//included this line so lexer can stop reading the rest of the string. The lexemes before this invalid one will still be tokenized
+				break; 
 			}
 			
-		}
 		//identifier handler
-		else if (el.match(identifier_chars)) {
+		} else if (el.match(identifier_chars)) {
+			
+			//identifier literal variable
 			var identifier = '';
 
 			while (el.match(identifier_chars)) {
+				
+				//Add alphabet character
 				identifier += el;
-				if (where == expr.length - 1) {
+				
+				//If EOS reached, stop
+				if (readhead == expr.length - 1) {
+					console.log(`Finished reading the string`);
 					break;
 				}
-				el = expr[++where];
+				//go to next element
+				el = expr[++readhead];
 			}
 
-			//CHANGED TOKEN TYPE VALUES
-
-			//words				 old name            new name
-			//and, or, not      		'logical'      to     'logic'
-			//non-reserved			'identifier'   to     'name'
-			//var, let, bool:   		'declarator'   to     'declare'
-			//continue:					      'skip'
-			//break:               		'jumper'       to     'jump'
-			//for, while, do:      		'looper'       to     'loop'
-			//switch,else,if:  		'conditional'    to   'decision'
+			//IDENTIFIER TOKEN VALIDATOR AND GENERATOR
 			if (identifier.match(/^(this|class|return|null|function|pass)$/)) {
 				tokens.push({ type: 'reserved', value: identifier });
 			} else if (identifier.match(/^(and|or|not)$/)) {
 				tokens.push({ type: 'logic', value: identifier });
-			//PUT KEYWORD CONTINUE ON A SEPARATE STATEMENT. TOKEN TYPE IS SKIP
 			} else if (identifier.match(/^(continue)$/)) {
 				tokens.push({ type: 'skip', value: identifier });
 			} else if (identifier.match(/^(break)$/)) {
@@ -95,86 +105,99 @@ function Lexer(expr) {
 			} else {
 				tokens.push({ type: 'name', value: identifier });
 			}
-		//UPDATED THIS CONDITION. ACCEPTS OP KEYS OR IGNORE KEYS
-		} else if (el.match(opkeys) || el.match(ignoreme)) {
+			
+		//MAJOR UPDATE TO THE OPERATOR HANDLER 
+		} else if (el.match(opkeys)) {
+			
+			//operator literal variable
 			var op = '';
-			
-			
-			while (el.match(opkeys) || el.match(ignoreme)) {
+
+			while (el.match(opkeys)) {
+				//Add operator character
 				op += el;
-				
-				//SINGLE LINE COMMENT IGNORER UPDATED
-				if (op.match(/^([\/]{2})$/) || el.match(/^#$/)) {
-					
-					console.log(`[${op}] Single line comment found. Ignore`);
-					el = expr[++where];
-					
-					while (el.match(/[^\n]/)) {
-						
-						if (where == expr.length - 1) {
-							break;
-						}
-			
-						//ADDED THIS STATEMENT.
-						if (el.match(/\n/)) {
-							break;
-						}
-						el = expr[++where];
-					}
-				}
-				
-				
-				// MULTI LINE COMMENT IGNORER. SEMI OPERATIONAL. NEEDS FIXING
-				/*
-				if (op.match(/^(\/\*|`{3})$/)) {
-					el = expr[++where];
 
-					console.log(`[${op}] Multi line comment found. Ignore`);
-
-					let brake = '';
-					if (el.match(/[`\*\/]/)) {
-						brake += el;
-					}
-
-					while (!(brake.match(/^(`{3}|\*\/)$/))) {
-						if (where == expr.length - 1) {
-							break;
-						}
-						el = expr[++where];
-					}
-				}*/
-				///////////////////////////////////////////////
-
-				//REMOVED 2ND CONDITION  el.match(/\n/)
-				if (where == expr.length - 1) {
+				//If EOS reached, stop
+				if (readhead == expr.length - 1) {
+					console.log(`Finished reading the string`);
 					break;
 				}
-				el = expr[++where];
+				
+				//go to next element
+				el = expr[++readhead];
 			}
 
-			//UPDATED THIS CONDITIONAL BLOCK
-			if (op.match(/^([|]{2}|[&]{2}|!)$/)) {
+			//SINGLE LINE COMMENT IGNORER
+			if (op.match(/^([\/]{2})$/)) {
+				console.log(`[${op}] Single line comment. Start ignoring`);
+
+				//go to next element
+				el = expr[++readhead];
+
+				//as long as there is a character that isn't a newline, keep skipping
+				while (el.match(/[^\n]/)) {
+					//If EOS reached, stop
+					if (readhead == expr.length - 1) {
+						console.log(`Finished reading the string`);
+						break;
+					}
+
+					//If newline found, stop ignoring stuff
+					if (el.match(/\n/)) {
+						break;
+					}
+
+					//go to next element
+					el = expr[++readhead];
+				}
+			
+			//MULTI LINE COMMENT IGNORER
+			} else if (op.match(/^(\/\*)$/)) {
+				console.log(`[${op}] Multi line comment. Start ignoring`);
+
+				//go to next element
+				el = expr[++readhead];
+
+				//stopper variable
+				let stop = ""
+				
+				//as long as there is a character that isn't a newline, keep skipping 
+				while (el.match(/[^\n]/)) {
+					//If EOF reached, stop
+					if (readhead == expr.length - 1) {
+						console.log(`Finished reading the string`);
+						break;
+					}
+
+					//accepts * or /. update later
+					if(el.match(/[\/\*]/)){
+						stop += el
+					}
+
+					//if stop is */ stop loop
+					if (stop.match(/\*\//)) {
+						break;
+					}
+					//go to next element
+					el = expr[++readhead];
+				}
+				console.log(`[${stop}] Multi line comment end`);
+
+			//OPERATOR TOKEN VALIDATOR AND GENERATOR
+			} else if (op.match(/^([|]{2}|[&]{2}|!)$/)) {
 				tokens.push({ type: 'logic', value: op });
 			} else if (op.match(/^([-]{1,2}|[+]{1,2}|[*]{1,2}|[\/%])$/)) {
 				tokens.push({ type: 'math', value: op });
-				
-			/*REMOVED THIS ELSE IF STATEMENT. WILL BE USED TO FORM SYMBOL HANDLER
-			} else if (op.match(/^([\[\]\(\)\{\}]|\.{3}|\.|[,;&:])$/)) {
-				tokens.push({ type: 'punctuation', value: op });*/
-				
 			} else if (op.match(/^([<>?]|[<>!=]=|[!=]==)$/)) {
 				tokens.push({ type: 'compare', value: op });
-				
-			//UPDATED THIS REGEX CONDITION. = OP NOW ACCEPTED
 			} else if (op.match(/^([-+*\/%*]=|\*{2}=|=)$/)) {
 				tokens.push({ type: 'assign', value: op });
 			} else {
 				console.log(`Invalid operator lexeme: ${op}`);
+				break
 			}
 			
-		//ADDED THIS BLOCK
 		} else if (el.match(symbols)) {
-
+			//SYMBOL TOKEN VALIDATOR AND GENERATOR
 			if (el.match(/^[\(\)]$/)) {
 				tokens.push({ type: 'specific', value: el });
 			} else if (el.match(/^[\{\}:]$/)) {
@@ -188,72 +211,59 @@ function Lexer(expr) {
 			} else if (el.match(/^\.$/)) {
 				tokens.push({ type: 'access', value: el });
 			}
-		
-		////////////////////////////////////////////////////////////////////////////	
-		//////////////MERGE THESE QUOTE HANDLERS ///////////////////////////////////
+	
+		//QUOTE HANDLERS HAVE BEEN MERGED
+		} else if (el.match(/^["']$/)) {
 			
-		//DOUBLE QUOTE HANDLER IS NOW OPERATIONAL
-		} else if (el.match(/^["]$/)) {
-			let stringDouble = '';
+			//string literal variable
+			let string = '';
 
-			//Add opening quote
-			stringDouble += el;
-			el = expr[++where];
+			//Add opening quote then jump  
+			string += el;
+			el = expr[++readhead];
 
-			while (el.match(/[^"]/)) {
-				//break loop if EOF is reached
-				if (where == expr.length - 1) {
-					break;
+			//Single quote
+			if(string[0] == "'"){
+				while (el.match(/[^']/)) {
+					//If EOS reached, stop
+					if (readhead == expr.length - 1) {
+						console.log(`Finished reading the string`);
+						break;
+					}
+					//store any character after that quote and read next character
+					string += el;
+					el = expr[++readhead];
 				}
-				//otherwise, add any character then skip 
-				stringDouble += el;
-				el = expr[++where];
-				
 			}
-			//Finally, add closing quote
-			stringDouble += el;
-
-			//Check if opening and closing strings match
-			if (stringDouble[stringDouble.length - 1].match(/"/)) {
-				tokens.push({ type: 'double quote string', value: stringDouble });
-			} else {
-				console.log(`Double quote string ${stringDouble} improperly set. `);
-			}
-			
-		//SINGLE QUOTE HANDLER IS NOW OPERATIONAL
-		} else if (el.match(/^[']$/)) {
-			let stringSingle = '';
-
-			//Add opening quote then skip  
-			stringSingle += el; 
-			el = expr[++where];
-
-			while (el.match(/[^']/)) {
-				//break loop if EOF is reached
-				if (where == expr.length - 1) {
-					break;
+			//Double quote
+			if(string[0] == '"'){
+				while (el.match(/[^"]/)) {
+					//If EOS reached, stop
+					if (readhead == expr.length - 1) {
+						console.log(`Finished reading the string`);
+						break;
+					}
+					//store any character after that quote and read next character
+					string += el;
+					el = expr[++readhead];
 				}
-				//otherwise, add any character then skip 
-				stringSingle += el;
-				el = expr[++where];
-
 			}
-			//Finally, add closing quote
-			stringSingle += el;
 
-			//Check if opening and closing strings match
-			if (stringSingle[stringSingle.length - 1].match(/'/)) {
-				tokens.push({ type: 'single quote string', value: stringSingle });
+			//Add closing quote then jump
+			string += el;
+
+			//STRING TOKEN VALIDATOR AND GENERATOR
+			if (string[0] == '"' && string[string.length - 1] == '"') {
+				tokens.push({ type: 'double quoted', value: string });
+			} else if (string[0] == "'" && string[string.length - 1] == "'") {
+				tokens.push({ type: 'single quoted', value: string });
 			} else {
-				console.log(`Single quote string ${stringSingle} improperly set. `);
+				console.log(`String ${string} improperly set. `);
+				break
 			}
 	
-		//////////////MERGE THESE QUOTE HANDLERS ///////////////////////////////////
-		////////////////////////////////////////////////////////////////////////////	
-			
-			
 		} else {
-			console.log(`Unknown character at index #${where}: ${el}`);
+			console.log(`Unknown character at index #${readhead}: ${el}`);
 		}
 	
 	}
@@ -264,32 +274,3 @@ function Lexer(expr) {
 }
 
 module.exports = {Lexer}
-
-/*
-VERY DETAILED EXPLANATION OF UPDATES TO THIS COMMIT: In markdown
-*Already included in Lexer Tune Up page of the project wiki but putting this here*
-
-*   Added conditional block that makes tokens from individual symbol characters
-    *  `.`  `,`  `;`  `:`  `[`  `]`  `{`  `}`  `(`  `)`
-*   Rewrote block that makes tokens from a sequence of operator characters
-    *   `-` `&` `|` `+` `*` `/` `=` `<` `>` `%` `?` `!`
-    * Also includes alternative characters for comments
-        *  `#` `<backtick * 3>` 
-    *   Updated the single line comment ignorer code
-    *   Included the multi line comment ignorer. Still needs fixing
-*   Changed token type names representing different categories of reserved keywords in id token generator block 
-    * Reasons:
-        1. to make the lexical info a bit more meaningful for Syntax and/or Semantic Analyses
-        2. because the names were better than the generic, bland ones like `reserved_keyword` or `identifier` or `operator`
-*   Updated the regex condition that makes assign type tokens so the `=` sign can be accepted
-    * New regex:  `/^([-+*\/%*]=|\*{2}=|=)$/`
-*   Added two blocks that each make string literal tokens. 
-    *   The bodies of the single quote and double quote handlers are nearly the same, so I'll merge them
-        *   Quote is added first, then other characters, and finally the closing quote
-            *   The string literal is inspected to see if the quotes match.
-    *   These handlers can be updated.
-
-
-
-*/
-
