@@ -26,10 +26,9 @@ var divvy = [];
 const ALPHABET_SOUP = /[A-Za-z]/
 const NUMBER_STEW = /[0-9]/
 const OPERATOR_KEYS = /[-&|!\+\*\/=<>%?]/
-const PUNCTUATION = /[.,;:\[\]\{\}\(\)]/
+const PUNCTUATION = /['.,;:\[\]\{\}\(\)]/
 const LITERAL_STRING = /["]/
 const NEWLINE = /[\n]/
-const APOSTROPHE = /[']/
 const SPACEBAR = /[ ]/
 
 //scanner
@@ -115,8 +114,6 @@ for (let index = 0; index < train.length; index++) {
 		
 	} else if (char.match(NEWLINE)) {
 		divvy.push("\n");
-	} else if (char.match(APOSTROPHE)) {
-		divvy.push("'");
 	} else if (char.match(SPACEBAR)) {
 		console.log(`Whitespace found. Index ${index}`)	
 	} else {
