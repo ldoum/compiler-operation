@@ -132,8 +132,112 @@ var bucks = [];
 
 //evaluator
 for (let index = 0; index < divvy.length; index++) {
-	var lexeme = divvy[index];
-	bucks.push(lexeme);
+        var wordup = divvy[index];
+
+	if (wordup.match(/^".*"$/)){
+		bucks.push({type: 'string' , value: wordup});
+	} else if (wordup.match(/^\d+$/)){
+		bucks.push({type: 'number' , value: wordup});
+	} else if (wordup.match(/^[A-Za-z_]+$/)) {
+		switch (wordup){
+			case "this":     
+                        case "class":     
+                        case "return":     
+                        case "null":     
+                        case "function":     
+                        case "pass":				
+		        case "and":     
+                        case "or":     
+                        case "not":				
+			case "continue":				
+			case "break":			
+			case "for":     
+                        case "while":     
+                        case "do":     
+                        case "in":     
+                        case "of":				
+			case "switch":     
+                        case "case":     
+                        case "if":    
+                        case "else":     
+                        case "default":     
+                        case "elif":		
+			case "true":     
+                        case "false":
+			case "var":     
+                        case "string":    
+                        case "bool":     
+                        case "double":     
+                        case "float":     
+                        case "int":     
+                        case "let":     
+                        case "const":     
+                        case "void":
+                        case "new":
+			case "def":
+				bucks.push({ type: 'reserved', value: wordup });
+				break;
+			default:
+				bucks.push({ type: 'identifier', value: wordup });
+		}
+	} else if (wordup.match(/^['.,;:\[\]\{\}\(\)]$/)){
+		switch (wordup){
+			case "(":
+			case ")":
+			case "{":
+			case "}":
+			case ":":
+			case "[":
+			case "]":
+			case ";":
+			case ",":
+			case ".":
+			case "'":
+				bucks.push({type: 'punctuator' , value: wordup});
+		}
+	} else if (wordup.match(/^[-&|!\+\*\/=<>%?]+$/)) {
+		switch (wordup){
+			case "||":
+			case "&&":
+			case "!":
+			case "-":
+			case "--":
+			case "+":
+			case "++":
+			case "*":
+			case "**":
+			case "/":
+			case "%":	
+			case "<":
+			case ">":
+			case "?":
+			case "<=":
+			case ">=":
+			case "!=":
+			case "==":
+			case "!==":
+			case "===":			
+			case "-=":
+			case "+=":
+			case "*=":
+			case "/=":
+			case "%=":
+			case "**=":
+			case "=":
+				bucks.push({type: 'operator' , value: wordup});
+				break;
+			default:
+				console.log(`${wordup} is not a valid operator lexeme`)
+		}
+	} else {
+		while(!wordup.match(/^(\n|\*\/)$/)){
+			wordup = divvy[++index]
+			if (index + 1 == divvy.length) {
+				break;
+			}
+		}
+		divvy[--index]
+    }
 }
 
 console.log('Tokens array: ');
