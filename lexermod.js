@@ -1,19 +1,7 @@
-//Lexical analysis in a nutshell.
-// 10ish pm 7/13/2022 Wednesday
-//Modified version of lexical analyzer
 
 const { readFileSync } = require('fs');
 
 var everything = readFileSync('./streamer.txt', 'utf-8')
-
-///////////////////ILLUSTRATION ONLY///////////////////////////////////
-
-//character array
-var train = [];
-//input
-for (let index = 0; index < everything.length; index++) {
-	train.push(everything[index]);
-}
 
 console.log('Total number of input characters: ');
 console.log(train.length);
@@ -32,90 +20,90 @@ const NEWLINE = /[\n]/
 const SPACEBAR = /[ ]/
 
 //scanner
-for (let index = 0; index < train.length; index++) {
-	var char = train[index];
+for (let index = 0; index < everything.length; index++) {
+	var char = everything[index];
 	var lexeme = ''
 
 	if (char.match(ALPHABET_SOUP)) {
 		
 		while (char.match(ALPHABET_SOUP)) {
-			if (index + 1 == train.length) {
+			if (index + 1 == everything.length) {
 				break;
 			}
 			
 			lexeme += char;
-			char = train[++index];
+			char = everything[++index];
 		}
 
 		divvy.push(lexeme);
-		char = train[--index] 
+		char = everything[--index] 
 
 	} else if (char.match(NUMBER_STEW)) {
 		
 		while (char.match(NUMBER_STEW)) {
-			if (index + 1 == train.length) {
+			if (index + 1 == everything.length) {
 				break;
 			}
 			
 			lexeme += char;
-			char = train[++index];
+			char = everything[++index];
 		}
 
 		divvy.push(lexeme);
-		char = train[--index] 
+		char = everything[--index] 
 
 	} else if (char.match(OPERATOR_KEYS)) {
 		
 		while (char.match(OPERATOR_KEYS)) {
-			if (index + 1 == train.length) {
+			if (index + 1 == everything.length) {
 				break;
 			}
 			
 			lexeme += char;
-			char = train[++index];
+			char = everything[++index];
 		}
 
 		divvy.push(lexeme);
-		char = train[--index] 
+		char = everything[--index] 
 
 	} else if (char.match(PUNCTUATION)) {
 		
 		while (char.match(PUNCTUATION)) {
-			if (index + 1 == train.length) {
+			if (index + 1 == everything.length) {
 				break;
 			}
 			
 			lexeme += char;
-			char = train[++index];
+			char = everything[++index];
 		}
 
 		divvy.push(lexeme);
-		char = train[--index] 
+		char = everything[--index] 
 
 	} else if (char.match(LITERAL_STRING)) {
 
 		lexeme += char;
-		char = train[++index];
+		char = everything[++index];
 
 		while (!char.match(LITERAL_STRING)) {
-			if (index + 1 == train.length) {
+			if (index + 1 == everything.length) {
 				break;
 			}
 			
 			lexeme += char;
-			char = train[++index];
+			char = everything[++index];
 		}
 
 		lexeme += char;
-		char = train[++index];
+		char = everything[++index];
 	
 		divvy.push(lexeme);
-		char = train[--index];
+		char = everything[--index];
 		
 	} else if (char.match(NEWLINE)) {
 		divvy.push("\n");
 	} else if (char.match(SPACEBAR)) {
-		console.log(`Whitespace found. Index ${index}`)	
+		//console.log(`Whitespace found. Index ${index}`)	
 	} else {
 		console.log(`Unknown character present: ${char}`)
 	}
@@ -123,6 +111,8 @@ for (let index = 0; index < train.length; index++) {
 
 console.log('Lexeme array: ');
 console.log(divvy);
+console.log('Lexeme array length: ');
+console.log(divvy.length);
 
 
 //////////////////////TOKENIZING PROCESS////////////////////////////////
