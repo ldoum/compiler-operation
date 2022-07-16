@@ -1,13 +1,6 @@
 
 const { readFileSync } = require('fs');
 
-var everything = readFileSync('./streamer.txt', 'utf-8')
-
-console.log('Total number of input characters: ');
-console.log(train.length);
-console.log('Whitespaces to ignore: ');
-console.log(everything.match(/[ ]/g).length);
-
 //////////////////////SCANNING PROCESS////////////////////////////////
 //lexeme array
 var divvy = [];
@@ -18,6 +11,10 @@ const PUNCTUATION = /['.,;:\[\]\{\}\(\)]/
 const LITERAL_STRING = /["]/
 const NEWLINE = /[\n]/
 const SPACEBAR = /[ ]/
+
+var everything = readFileSync('./streamer.txt', 'utf-8')
+console.log(`Total number of input characters: ${everything.length}`);
+console.log(`Whitespaces to ignore: ${everything.match(/[ ]/g).length}`);
 
 //scanner
 for (let index = 0; index < everything.length; index++) {
@@ -109,10 +106,14 @@ for (let index = 0; index < everything.length; index++) {
 	}
 }
 
-console.log('Lexeme array: ');
-console.log(divvy);
-console.log('Lexeme array length: ');
-console.log(divvy.length);
+////////////LEXEME PRINTER//////////////
+try {
+  writeFileSync('./wordplay.txt', divvy.join("\n").toString());
+  console.log('Lexing complete!')
+} catch (err) {
+  console.error(err);
+}
+console.log(`Total number of lexemes: ${divvy.length}`);
 
 
 //////////////////////TOKENIZING PROCESS////////////////////////////////
@@ -216,19 +217,35 @@ for (let index = 0; index < divvy.length; index++) {
 			case "=":
 				bucks.push({type: 'operator' , value: wordup});
 				break;
+			case "//":
+			case "/*":
+			case "*/":	
+				while(!wordup.match(/^(\n|\*\/)$/)){
+					wordup = divvy[++index]
+					if (index + 1 == divvy.length) {
+						break;
+					}
+				}
+				divvy[--index]
+				break;
 			default:
 				console.log(`${wordup} is not a valid operator lexeme`)
 		}
-	} else {
-		while(!wordup.match(/^(\n|\*\/)$/)){
-			wordup = divvy[++index]
-			if (index + 1 == divvy.length) {
-				break;
-			}
-		}
-		divvy[--index]
-    }
+	} 
 }
 
-console.log('Tokens array: ');
-console.log(bucks);
+////////////TOKEN PRINTER//////////////
+var seer = []
+for (let index = 0; index < bucks.length; index++) {
+    seer.push(`Token ${index+1} : {${Object.values(bucks[index]).join(" - ").toString()}}`)
+}
+
+try {
+  writeFileSync('./money.txt', seer.join("\n").toString());
+  console.log('Tokenizing complete!')
+} catch (err) {
+  console.error(err);
+}
+console.log(`Total number of tokens: ${bucks.length}`);
+
+
