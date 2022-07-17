@@ -203,6 +203,7 @@ for (let index = 0; index < divvy.length; index++) {
 			case "%":	
 			case "<":
 			case ">":
+			case "^": //added this case. Also acts as the exponent operator
 			case "?":
 			case "<=":
 			case ">=":
