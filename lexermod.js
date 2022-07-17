@@ -6,7 +6,7 @@ const { readFileSync } = require('fs');
 var divvy = [];
 const ALPHABET_SOUP = /[A-Za-z]/
 const NUMBER_STEW = /[0-9]/
-const OPERATOR_KEYS = /[-&|!\+\*\/=<>%?]/
+const OPERATOR_KEYS = /[-&|!\+\*\/=<>%?^]/    //constant updated
 const PUNCTUATION = /['.,;:\[\]\{\}\(\)]/
 const LITERAL_STRING = /["]/
 const NEWLINE = /[\n]/
@@ -188,7 +188,7 @@ for (let index = 0; index < divvy.length; index++) {
 			case "'":
 				bucks.push({type: 'punctuator' , value: wordup});
 		}
-	} else if (wordup.match(/^[-&|!\+\*\/=<>%?]+$/)) {
+	} else if (wordup.match(/^[-&|!\+\*\/=<>%?^]+$/)) { //condition updated
 		switch (wordup){
 			case "||":
 			case "&&":
