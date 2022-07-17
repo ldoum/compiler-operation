@@ -12,6 +12,7 @@ const LITERAL_STRING = /["]/
 const NEWLINE = /[\n]/
 const SPACEBAR = /[ ]/
 
+//the filepath may vary
 var everything = readFileSync('./streamer.txt', 'utf-8')
 console.log(`Total number of input characters: ${everything.length}`);
 console.log(`Whitespaces to ignore: ${everything.match(/[ ]/g).length}`);
@@ -108,6 +109,7 @@ for (let index = 0; index < everything.length; index++) {
 
 ////////////LEXEME PRINTER//////////////
 try {
+  //the filepath may vary
   writeFileSync('./wordplay.txt', divvy.join("\n").toString());
   console.log('Lexing complete!')
 } catch (err) {
@@ -218,15 +220,21 @@ for (let index = 0; index < divvy.length; index++) {
 				bucks.push({type: 'operator' , value: wordup});
 				break;
 			case "//":
-			case "/*":
-			case "*/":	
-				while(!wordup.match(/^(\n|\*\/)$/)){
+				while(!wordup.match(/^\n$/)){
 					wordup = divvy[++index]
 					if (index + 1 == divvy.length) {
 						break;
 					}
 				}
-				divvy[--index]
+				break;
+			case "/*":
+			case "*/":	
+				while(!wordup.match(/^\*\/$/)){
+					wordup = divvy[++index]
+					if (index + 1 == divvy.length) {
+						break;
+					}
+				}
 				break;
 			default:
 				console.log(`${wordup} is not a valid operator lexeme`)
@@ -241,6 +249,7 @@ for (let index = 0; index < bucks.length; index++) {
 }
 
 try {
+  //the filepath may vary
   writeFileSync('./money.txt', seer.join("\n").toString());
   console.log('Tokenizing complete!')
 } catch (err) {
