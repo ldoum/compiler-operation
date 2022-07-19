@@ -1,4 +1,4 @@
-//currently going global
+
 var current = 0
 
 function walk() {
@@ -47,7 +47,8 @@ function walk() {
 	}
 }
 
-function Parser(){
+//missed that on last commit.
+function Parser(tokens){
 
     let ast = {
 	type: 'Base',
