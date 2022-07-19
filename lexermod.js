@@ -246,7 +246,7 @@ for (let index = 0; index < divvy.length; index++) {
 ////////////TOKEN PRINTER//////////////
 var seer = []
 for (let index = 0; index < bucks.length; index++) {
-    seer.push(`{  type: '${Object.values(bucks[index]).join("' , value: '").toString()}'  }`)
+    seer.push(`{  type: '${Object.values(bucks[index]).join("' , value: '").toString()}'  },`) //added a comma at the end
 }
 
 try {
