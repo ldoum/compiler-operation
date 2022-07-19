@@ -1,12 +1,12 @@
 
-const { readFileSync } = require('fs');
+const { readFileSync, writeFileSync } = require('fs');
 
 //////////////////////SCANNING PROCESS////////////////////////////////
 //lexeme array
 var divvy = [];
 const ALPHABET_SOUP = /[A-Za-z]/
 const NUMBER_STEW = /[0-9]/
-const OPERATOR_KEYS = /[-&|!\+\*\/=<>%?^]/    //constant updated
+const OPERATOR_KEYS = /[-&|!\+\*\/=<>%?^]/    
 const PUNCTUATION = /['.,;:\[\]\{\}\(\)]/
 const LITERAL_STRING = /["]/
 const NEWLINE = /[\n]/
@@ -203,7 +203,7 @@ for (let index = 0; index < divvy.length; index++) {
 			case "%":	
 			case "<":
 			case ">":
-			case "^": //added this case. Also acts as the exponent operator
+			case "^": 
 			case "?":
 			case "<=":
 			case ">=":
@@ -246,7 +246,7 @@ for (let index = 0; index < divvy.length; index++) {
 ////////////TOKEN PRINTER//////////////
 var seer = []
 for (let index = 0; index < bucks.length; index++) {
-    seer.push(`Token ${index+1} : {${Object.values(bucks[index]).join(" - ").toString()}}`)
+    seer.push(`{  type: ${Object.values(bucks[index]).join(", value: ").toString()}  }`)
 }
 
 try {
