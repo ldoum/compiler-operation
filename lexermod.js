@@ -6,8 +6,8 @@ const { readFileSync, writeFileSync } = require('fs');
 var divvy = [];
 const ALPHABET_SOUP = /[A-Za-z]/
 const NUMBER_STEW = /[0-9]/
-const OPERATOR_KEYS = /[-&|!\+\*\/=<>%?^]/    
-const PUNCTUATION = /['.,;:\[\]\{\}\(\)]/
+const OPERATOR_KEYS = /[-\.&|!\+\*\/=<>%?^]/    
+const PUNCTUATION = /[,;:\[\]\{\}\(\)]/   //moving . to operator keys constant. removing apostrophe entirely
 const LITERAL_STRING = /["]/
 const NEWLINE = /[\n]/
 const SPACEBAR = /[ ]/
@@ -173,7 +173,7 @@ for (let index = 0; index < divvy.length; index++) {
 			default:
 				bucks.push({ type: 'identifier', value: wordup });
 		}
-	} else if (wordup.match(/^['.,;:\[\]\{\}\(\)]$/)){
+	} else if (wordup.match(PUNCTUATION)){
 		switch (wordup){
 			case "(":
 			case ")":
@@ -184,11 +184,9 @@ for (let index = 0; index < divvy.length; index++) {
 			case "]":
 			case ";":
 			case ",":
-			case ".":
-			case "'":
 				bucks.push({type: 'punctuator' , value: wordup});
 		}
-	} else if (wordup.match(/^[-&|!\+\*\/=<>%?^]+$/)) { 
+	} else if (wordup.match(/^[-\.&|!\+\*\/=<>%?^]+$/)) { 
 		switch (wordup){
 			case "||":
 			case "&&":
@@ -218,6 +216,8 @@ for (let index = 0; index < divvy.length; index++) {
 			case "%=":
 			case "**=":
 			case "=":
+			case ".":     //adding this case
+			case "...":   //adding this case too
 				bucks.push({type: 'operator' , value: wordup});
 				break;
 			case "//":
@@ -240,13 +240,15 @@ for (let index = 0; index < divvy.length; index++) {
 			default:
 				console.log(`${wordup} is not a valid operator lexeme`)
 		}
+		
 	} 
+	
 }
 
 ////////////TOKEN PRINTER//////////////
 var seer = []
 for (let index = 0; index < bucks.length; index++) {
-    seer.push(`{  type: '${Object.values(bucks[index]).join("' , value: '").toString()}'  },`) //added a comma at the end
+    seer.push(`{  type: '${Object.values(bucks[index]).join("' , value: '").toString()}'  },`) 
 }
 
 try {
