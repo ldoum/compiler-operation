@@ -7,7 +7,7 @@ var divvy = [];
 const ALPHABET_SOUP = /[A-Za-z]/
 const NUMBER_STEW = /[0-9]/
 const OPERATOR_KEYS = /[-\.&|!\+\*\/=<>%?^]/    
-const PUNCTUATION = /[,;:\[\]\{\}\(\)]/   //moving . to operator keys constant. removing apostrophe entirely
+const PUNCTUATION = /[,;:\[\]\{\}\(\)]/  
 const LITERAL_STRING = /["]/
 const NEWLINE = /[\n]/
 const SPACEBAR = /[ ]/
@@ -104,6 +104,7 @@ for (let index = 0; index < everything.length; index++) {
 		//console.log(`Whitespace found. Index ${index}`)	
 	} else {
 		console.log(`Unknown character present: ${char}`)
+		divvy.splice(0, divvy.length);  //eraser
 	}
 }
 
@@ -216,8 +217,8 @@ for (let index = 0; index < divvy.length; index++) {
 			case "%=":
 			case "**=":
 			case "=":
-			case ".":     //adding this case
-			case "...":   //adding this case too
+			case ".":     
+			case "...":   
 				bucks.push({type: 'operator' , value: wordup});
 				break;
 			case "//":
@@ -239,6 +240,7 @@ for (let index = 0; index < divvy.length; index++) {
 				break;
 			default:
 				console.log(`${wordup} is not a valid operator lexeme`)
+				bucks.splice(0, bucks.length);  //eraser
 		}
 		
 	} 
