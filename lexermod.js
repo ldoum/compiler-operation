@@ -66,17 +66,9 @@ for (let index = 0; index < everything.length; index++) {
 
 	} else if (char.match(PUNCTUATION)) {
 		
-		while (char.match(PUNCTUATION)) {
-			if (index + 1 == everything.length) {
-				break;
-			}
-			
-			lexeme += char;
-			char = everything[++index];
-		}
-
+		//Revised algorithm. Each punctuator character is its own lexeme
+		lexeme = char
 		divvy.push(lexeme);
-		char = everything[--index] 
 
 	} else if (char.match(LITERAL_STRING)) {
 
@@ -99,12 +91,12 @@ for (let index = 0; index < everything.length; index++) {
 		char = everything[--index];
 		
 	} else if (char.match(NEWLINE)) {
-		divvy.push("\n");
+		divvy.push("<newline>");
 	} else if (char.match(SPACEBAR)) {
-		//console.log(`Whitespace found. Index ${index}`)	
+		divvy.push("<space>");	
 	} else {
 		console.log(`Unknown character present: ${char}`)
-		divvy.splice(0, divvy.length);  //eraser
+		divvy.splice(0, divvy.length);  
 	}
 }
 
@@ -240,7 +232,7 @@ for (let index = 0; index < divvy.length; index++) {
 				break;
 			default:
 				console.log(`${wordup} is not a valid operator lexeme`)
-				bucks.splice(0, bucks.length);  //eraser
+				bucks.splice(0, bucks.length);  
 		}
 		
 	} 
