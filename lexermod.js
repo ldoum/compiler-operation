@@ -103,7 +103,7 @@ for (let index = 0; index < everything.length; index++) {
 ////////////LEXEME PRINTER//////////////
 try {
   //the filepath may vary
-  writeFileSync('./wordplay.txt', divvy.join("\n").toString());
+  writeFileSync('./wordplay.txt', JSON.stringify(divvy));
   console.log('Lexing complete!')
 } catch (err) {
   console.error(err);
@@ -240,14 +240,9 @@ for (let index = 0; index < divvy.length; index++) {
 }
 
 ////////////TOKEN PRINTER//////////////
-var seer = []
-for (let index = 0; index < bucks.length; index++) {
-    seer.push(`{  type: '${Object.values(bucks[index]).join("' , value: '").toString()}'  },`) 
-}
-
 try {
   //the filepath may vary
-  writeFileSync('./money.txt', seer.join("\n").toString());
+  writeFileSync('./money.txt', JSON.stringify(bucks));
   console.log('Tokenizing complete!')
 } catch (err) {
   console.error(err);
