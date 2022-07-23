@@ -9,8 +9,10 @@ const NUMBER_STEW = /[0-9]/
 const OPERATOR_KEYS = /[-\.&|!\+\*\/=<>%?^]/    
 const PUNCTUATION = /[,;:\[\]\{\}\(\)]/  
 const LITERAL_STRING = /["]/
-const NEWLINE = /[\n]/
-const SPACEBAR = /[ ]/
+//updated this constant
+const NEWLINE = /\n/
+//updated this constant
+const SPACEBAR = / /
 
 //the filepath may vary
 var everything = readFileSync('./streamer.txt', 'utf-8')
@@ -65,8 +67,7 @@ for (let index = 0; index < everything.length; index++) {
 		char = everything[--index] 
 
 	} else if (char.match(PUNCTUATION)) {
-		
-		//Revised algorithm. Each punctuator character is its own lexeme
+	
 		lexeme = char
 		divvy.push(lexeme);
 
@@ -91,9 +92,11 @@ for (let index = 0; index < everything.length; index++) {
 		char = everything[--index];
 		
 	} else if (char.match(NEWLINE)) {
-		divvy.push("<newline>");
+		//updated this content
+		divvy.push("\n");
 	} else if (char.match(SPACEBAR)) {
-		divvy.push("<space>");	
+		//updated this content
+		divvy.push(" ");	
 	} else {
 		console.log(`Unknown character present: ${char}`)
 		divvy.splice(0, divvy.length);  
@@ -214,7 +217,8 @@ for (let index = 0; index < divvy.length; index++) {
 				bucks.push({type: 'operator' , value: wordup});
 				break;
 			case "//":
-				while(!wordup.match(/^\n$/)){
+				//put newline regex constant here
+				while(!wordup.match(NEWLINE)){
 					wordup = divvy[++index]
 					if (index + 1 == divvy.length) {
 						break;
@@ -223,7 +227,8 @@ for (let index = 0; index < divvy.length; index++) {
 				break;
 			case "/*":
 			case "*/":	
-				while(!wordup.match(/^\*\/$/)){
+				//de-anchored this regexp
+				while(!wordup.match(/\*\//)){
 					wordup = divvy[++index]
 					if (index + 1 == divvy.length) {
 						break;
