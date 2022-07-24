@@ -9,9 +9,7 @@ const NUMBER_STEW = /[0-9]/
 const OPERATOR_KEYS = /[-\.&|!\+\*\/=<>%?^]/    
 const PUNCTUATION = /[,;:\[\]\{\}\(\)]/  
 const LITERAL_STRING = /["]/
-//updated this constant
 const NEWLINE = /\n/
-//updated this constant
 const SPACEBAR = / /
 
 //the filepath may vary
@@ -47,6 +45,13 @@ for (let index = 0; index < everything.length; index++) {
 			
 			lexeme += char;
 			char = everything[++index];
+			
+			//Added this block statement
+			if (char.match(/[-+\.Ee]/)) {
+				lexeme += char;
+				char = everything[++index];
+			}
+			
 		}
 
 		divvy.push(lexeme);
@@ -125,8 +130,16 @@ for (let index = 0; index < divvy.length; index++) {
 
 	if (wordup.match(/^".*"$/)){
 		bucks.push({type: 'string' , value: wordup});
-	} else if (wordup.match(/^\d+$/)){
-		bucks.push({type: 'number' , value: wordup});
+	//updated this conditional statement
+	} else if (wordup.match(NUMBER_STEW)){
+		const NUMBER_LITERAL = /^(\d+|(\d+\.\d*|\d*\.\d+)|(\d+|\d+\.\d*|\d*\.\d+)[Ee]([-+]\d{1,2}|\d{1,2}))$/
+		if (wordup.match(NUMBER_LITERAL)) {
+			bucks.push({ type: 'number', value: wordup });
+		} else {
+			console.log(`Invalid digit lexeme: ${wordup}`);
+			bucks.splice(0, bucks.length);
+			break;
+		}
 	} else if (wordup.match(/^[A-Za-z_]+$/)) {
 		switch (wordup){
 			case "this":     
