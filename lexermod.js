@@ -46,8 +46,8 @@ for (let index = 0; index < everything.length; index++) {
 			lexeme += char;
 			char = everything[++index];
 			
-			//Added this block statement
-			if (char.match(/[-+\.Ee]/)) {
+			//Fixed this block statement
+			while (char.match(/[-+\.Ee]/)) {
 				lexeme += char;
 				char = everything[++index];
 			}
