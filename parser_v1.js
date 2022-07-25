@@ -1,4 +1,4 @@
-
+//VERSION 1
 var current = 0
 
 function walk() {
