@@ -1,4 +1,7 @@
 //VERSION 1
+const { writeFileSync } = require('fs');
+const {formatter} = require('../SavePoint/formatter.js')  //the filepath may vary
+
 var current = 0
 
 function walk() {
@@ -47,7 +50,6 @@ function walk() {
 	}
 }
 
-//missed that on last commit.
 function Parser(tokens){
 
     let ast = {
@@ -59,6 +61,15 @@ function Parser(tokens){
 
     while (current < tokens.length) {
 	ast.body.push(walk());
+    }
+	
+	
+    try {
+	writeFileSync('Compilation/SavePoint/climb.txt', formatter(ast));
+	console.log('Ast complete!');
+    } catch (err) {
+	console.log('Ast is burning!');
+	console.error(err);
     }
 	
     return ast;
