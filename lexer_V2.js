@@ -1,5 +1,6 @@
-
+//VERSION 2
 const { readFileSync, writeFileSync } = require('fs');
+const {formatter} = require('./formatter.js')
 
 //////////////////////SCANNING PROCESS////////////////////////////////
 //lexeme array
@@ -111,7 +112,7 @@ for (let index = 0; index < everything.length; index++) {
 ////////////LEXEME PRINTER//////////////
 try {
   //the filepath may vary
-  writeFileSync('./wordplay.txt', JSON.stringify(divvy));
+  writeFileSync('./wordplay.txt', formatter(divvy));
   console.log('Lexing complete!')
 } catch (err) {
   console.error(err);
@@ -260,7 +261,7 @@ for (let index = 0; index < divvy.length; index++) {
 ////////////TOKEN PRINTER//////////////
 try {
   //the filepath may vary
-  writeFileSync('./money.txt', JSON.stringify(bucks));
+  writeFileSync('./money.txt', formatter(bucks));
   console.log('Tokenizing complete!')
 } catch (err) {
   console.error(err);
