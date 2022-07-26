@@ -1,15 +1,15 @@
+const { readFileSync } = require('fs');
+const { Lexer } = require('./lexer2');
 
-const {Lexer} = require('./lab.js') 
 
+function Compiler(input_string) {
+	var tokens = Lexer(input_string);
+	//the rest go here
 
-function Compiler(input_string){
-    var tokens = Lexer(input_string)
-    return tokens
+	return tokens;
 }
 
-//Input
-console.log(Compiler("!!"))
-
-
+var everything = readFileSync('./Compilation/SavePoint/streamer.txt', 'utf-8');
+console.log(Compiler(everything));
 
 
