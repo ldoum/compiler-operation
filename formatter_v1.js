@@ -1,3 +1,5 @@
+const INDENTATION = '\t';
+
 function formatter(data) {
 	let template = [];
 
@@ -11,7 +13,7 @@ function formatter(data) {
 				template.push(plant);
 				template.push('\n');
 				for (let i = 0; i < tabs; i++) {
-					template.push('\t');
+					template.push(INDENTATION);
 				}
 				break;
 			case '}':
@@ -19,7 +21,7 @@ function formatter(data) {
 				tabs--;
 				template.push('\n');
 				for (let i = 0; i < tabs; i++) {
-					template.push('\t');
+					template.push(INDENTATION);
 				}
 				template.push(plant);
 				break;
@@ -27,7 +29,7 @@ function formatter(data) {
 				template.push(plant);
 				template.push('\n');
 				for (let i = 0; i < tabs; i++) {
-					template.push('\t');
+					template.push(INDENTATION);
 				}
 				break;
 			default:
